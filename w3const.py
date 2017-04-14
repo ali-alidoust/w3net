@@ -15,8 +15,15 @@ SC_ROOT_PATH         = b'RootPath'
 
 SD_UNFILTERED_LOCALS = b'UnfilteredLocals'
 SD_SORT_LOCALS       = b'SortLocals'
+SD_OPCODE_REQUEST    = b'OpcodeBreakdownRequest'
 
-TYPE_BOOL            = bytearray([0x81, 0x08])
+S_RELOAD             = b'reload'
+S_PKG_SYNC           = b'pkgSync'
+
+CFG_LIST             = b'list'
+
+TYPE_BYTE            = bytearray([0x81, 0x08])
 TYPE_STRING_UTF8     = bytearray([0xAC, 0x08, 0x81, 0x16])
 TYPE_STRING_UTF16    = bytearray([0x9C, 0x16, 0x81, 0x16])
 TYPE_INT32           = bytearray([0x81, 0x32])
+TYPE_INT64           = bytearray([0x81, 0x64])

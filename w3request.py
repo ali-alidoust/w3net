@@ -2,7 +2,6 @@ from struct import pack
 from w3const import *
 
 class Request:
-
     def __init__(self):
         self.payload = bytearray()
     
@@ -40,28 +39,56 @@ class Request:
     def varlist(self, section, name):
         return (self.utf8(NS_CONFIG)
             .int32(0xCC00CC00) # magic number
-            .utf8("list")
+            .utf8(CFG_LIST)
             .utf8(section)     # Section
             .utf8(name))       # Variable Name
     
+    def reload(self):
+        return (self.utf8(NS_SCRIPTS)
+            .utf8(S_RELOAD))
+    
+    def pkglist(self):
+        return (self.utf8(NS_SCRIPTS)
+            .utf8(S_PKG_SYNC)
+            .end())
+
+    def opcode(self, funcname, classname=None):
+        self.utf8(NS_SCRIPT_DEBUGGER) \
+            .utf8(SD_OPCODE_REQUEST) \
+            .utf16(funcname)
+        if (classname == None):
+            return self.byte(0)
+        else:
+            return self.byte(1).utf16(classname)
+    
     def byte(self, value):
-        return self.append(TYPE_BOOL) \
+        return self.append(TYPE_BYTE) \
             .append(pack("!?", value))
 
     def utf8(self, token):
         return self.append(TYPE_STRING_UTF8) \
             .len_short(len(token)) \
             .append(token)
+    
     def utf16(self, token):
         return self.append(TYPE_STRING_UTF16) \
             .len_short(len(token)) \
             .append(token.encode("utf_16_be"))
+    
     def int32(self, value):
         iv = value
         if(iv & 0x80000000):
             iv = -0x100000000 + iv
         return self.append(TYPE_INT32) \
             .append(pack("!l", iv))
+    
+    def int64(self, value):
+        iv = value
+        if(iv & 0x8000000000000000):
+            iv = -0x1000000000000000 + iv
+        return self.append(TYPE_INT64) \
+            .append(pack("!q", iv))
+    
     def len_short(self, length):
         return self.append(pack("!H", length))
 

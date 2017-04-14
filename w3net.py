@@ -24,7 +24,15 @@ class W3Net(asyncore.dispatcher_with_send):
         self.send(Request().sc_root_path().end())
         # self.send(Request().remote("testmenu").end()) # Opens test menu
         # self.send(Request().varlist("Visuals", ""))   # Get all of the variables from "Visuals" section
-
+        # self.send(Request()
+        #     .utf8("Utility")
+        #     .int64(100)
+        #     .utf8("Ping")
+        #     .end())
+        self.send(Request()
+            .opcode("OnConfigUI", "CR4TestPopup")
+            .end()
+        )
 
     def handle_read(self):
         # print(self.recv(8192))
