@@ -22,15 +22,9 @@ class W3Net(asyncore.dispatcher_with_send):
         self.send(Request().bind(NS_REMOTE).end())
         self.send(Request().bind(NS_CONFIG).end())
         self.send(Request().sc_root_path().end())
-        # self.send(Request().remote('testmenu').end()) # Opens test menu
-        self.send(Request()
-            .utf8(NS_CONFIG)
-            .int32(0xCC00CC00) # magic number
-            .utf8("list")
-            .utf8("") # Section
-            .utf8("") # Variable Name
-            .end()
-        )
+        # self.send(Request().remote("testmenu").end()) # Opens test menu
+        # self.send(Request().varlist("Visuals", ""))   # Get all of the variables from "Visuals" section
+
 
     def handle_read(self):
         # print(self.recv(8192))

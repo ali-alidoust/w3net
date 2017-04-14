@@ -34,8 +34,15 @@ class Request:
     def remote(self, cmd):
         return (self.utf8(NS_REMOTE)
             .int32(0x12345678) # magic number
-            .int32(0x81160008) # must be larger than or equal to 0x81160008, TODO: What's it's use?
+            .int32(0x81160008) # must be larger than or equal to 0x81160008, TODO: What's its use?
             .utf8(cmd))
+
+    def varlist(self, section, name):
+        return (self.utf8(NS_CONFIG)
+            .int32(0xCC00CC00) # magic number
+            .utf8("list")
+            .utf8(section)     # Section
+            .utf8(name))       # Variable Name
     
     def byte(self, value):
         return self.append(TYPE_BOOL) \
