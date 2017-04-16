@@ -1,7 +1,10 @@
 import asyncore, socket
 from w3request import Request
 from w3response import ResponseParser
+from ptpython.repl import embed
 from w3const import *
+import threading
+from pprint import pprint
 
 # print(hexlify(Request().bind(Request.NS_SCRIPT_COMPILER).end()))
 
@@ -66,12 +69,62 @@ class W3Net(asyncore.dispatcher_with_send):
         #     .end())
 
     def handle_read(self):
-        # print(self.recv(8192))
-        print(ResponseParser.parse(self.recv(8192*32)))
-        
+        response = ResponseParser.parse(self.recv(8192*32))
+        result = ""
+        for param in response.params:
+            if (param != None) and ('data' in param) and (param.data != None) and ('value' in param.data):
+                result += str(param.data.value) + ' | '
+        print(result[:-3])
 
-def main():
-    W3Net()
-    asyncore.loop()
+def w3reload():
+    """ Reload game scripts"""
+    send(Request()
+        .reload()
+        .end())
 
-main()
+def w3rootpath():
+    """ Get the root path for scripts"""
+    send(Request()
+        .sc_root_path()
+        .end())
+
+def w3varlist(section="", name=""):
+    """ Searches for config variables 
+    Args:
+        section (str): Section to search. If left empty, searches all sections
+        name    (str): Only the variables containing this token will be returned. Leave empty for all variables
+    """
+    send(Request()
+        .varlist(section, name)
+        .end())
+
+class Main:
+    def __init__(self):
+        self.thread = None
+        self.net = None
+
+    def start(self):
+        self.thread = threading.Thread(target=asyncore.loop)
+        self.net = W3Net()
+        self.thread.start()
+        embed(globals(), locals(), history_filename="./w3net.history")
+        self.net.close()
+        # self.thread.join()
+
+    def send(self, data):
+        self.net.send(data)
+
+    @staticmethod
+    def configure(repl):
+        repl.show_docstring = True
+    
+    # def output(self, data):
+    #     self.
+
+main = Main()
+
+def send(data):
+    global main
+    main.send(data)
+
+main.start()
