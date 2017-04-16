@@ -89,6 +89,10 @@ class Request:
         return self.append(TYPE_INT64) \
             .append(pack("!q", iv))
     
+    def uint32(self, value):
+        return self.append(TYPE_UINT32) \
+            .append(pack("!L", value))
+
     def len_short(self, length):
         return self.append(pack("!H", length))
 
