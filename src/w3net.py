@@ -1,10 +1,8 @@
 import asyncore, socket
 from w3request import Request
 from w3response import ResponseParser
-from ptpython.repl import embed
+
 from w3const import *
-import threading
-from time import sleep
 
 # print(hexlify(Request().bind(Request.NS_SCRIPT_COMPILER).end()))
 
@@ -15,6 +13,7 @@ class W3Net(asyncore.dispatcher_with_send):
         # self.set_reuse_addr()
         self.bind(('localhost', 0))
         self.connect(('localhost', 37001))
+        self.isClosing = False
 
     def handle_connect(self):
         self.send(Request().bind(NS_SCRIPT_COMPILER).end())
@@ -55,14 +54,14 @@ class W3Net(asyncore.dispatcher_with_send):
         #     .utf16("NULL")
         #     .end())
 
-        self.send(Request()
-            .utf8(NS_SCRIPT_DEBUGGER)
-            .utf8("LocalsRequest")
-            .int32(0x01010101)
-            .int32(0x00000000)
-            .utf16("")
-            .int32(0x00000000)
-            .end())
+        # self.send(Request()
+        #     .utf8(NS_SCRIPT_DEBUGGER)
+        #     .utf8("LocalsRequest")
+        #     .int32(0x01010101)
+        #     .int32(0x00000000)
+        #     .utf16("")
+        #     .int32(0x00000000)
+        #     .end())
 
         # self.send(Request()
         #     .remote("mytest(5)")
@@ -77,69 +76,12 @@ class W3Net(asyncore.dispatcher_with_send):
         print(result[:-3])
 
     def handle_close(self):
-        print("Connection failed.")
-        print("Retrying connection...")
-        # self.bind(('localhost', 0))
-        self.connect(('localhost', 37001))
-
-
-def w3reload():
-    """ Reload game scripts"""
-    send(Request()
-        .reload()
-        .end())
-
-def w3rootpath():
-    """ Get the root path for scripts"""
-    send(Request()
-        .sc_root_path()
-        .end())
-
-def w3varlist(section="", name=""):
-    """ Searches for config variables 
-    Args:
-        section (str): Section to search. If left empty, searches all sections
-        name    (str): Only the variables containing this token will be returned. Leave empty for all variables
-    """
-    send(Request()
-        .varlist(section, name)
-        .end())
-
-class Main:
-    def __init__(self):
-        self.thread = None
-        self.net = None
+        if not self.isClosing:
+            print("Connection failed.")
+            print("Retrying connection...")
+            # self.bind(('localhost', 0))
+            self.connect(('localhost', 37001))
     
     @staticmethod
     def loop():
         asyncore.loop()
-
-    def start(self):
-        self.thread = threading.Thread(target=Main.loop)
-        self.net = W3Net()
-        self.thread.start()
-        sleep(2)
-        if self.thread.isAlive():
-            embed(globals(), locals(), history_filename="./w3net.history")
-            self.net.close()
-        else:
-            print("Failed to connect to the game. Exiting...")
-        # self.thread.join()
-
-    def send(self, data):
-        self.net.send(data)
-
-    @staticmethod
-    def configure(repl):
-        repl.show_docstring = True
-    
-    # def output(self, data):
-    #     self.
-
-main = Main()
-
-def send(data):
-    global main
-    main.send(data)
-
-main.start()
