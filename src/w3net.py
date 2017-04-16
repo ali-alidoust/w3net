@@ -4,7 +4,7 @@ from w3response import ResponseParser
 from ptpython.repl import embed
 from w3const import *
 import threading
-from pprint import pprint
+from time import sleep
 
 # print(hexlify(Request().bind(Request.NS_SCRIPT_COMPILER).end()))
 
@@ -12,8 +12,8 @@ class W3Net(asyncore.dispatcher_with_send):
     def __init__(self):
         asyncore.dispatcher_with_send.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.set_reuse_addr()
-        self.bind(('localhost', 8081))
+        # self.set_reuse_addr()
+        self.bind(('localhost', 0))
         self.connect(('localhost', 37001))
 
     def handle_connect(self):
@@ -76,6 +76,13 @@ class W3Net(asyncore.dispatcher_with_send):
                 result += str(param.data.value) + ' | '
         print(result[:-3])
 
+    def handle_close(self):
+        print("Connection failed.")
+        print("Retrying connection...")
+        # self.bind(('localhost', 0))
+        self.connect(('localhost', 37001))
+
+
 def w3reload():
     """ Reload game scripts"""
     send(Request()
@@ -102,13 +109,21 @@ class Main:
     def __init__(self):
         self.thread = None
         self.net = None
+    
+    @staticmethod
+    def loop():
+        asyncore.loop()
 
     def start(self):
-        self.thread = threading.Thread(target=asyncore.loop)
+        self.thread = threading.Thread(target=Main.loop)
         self.net = W3Net()
         self.thread.start()
-        embed(globals(), locals(), history_filename="./w3net.history")
-        self.net.close()
+        sleep(2)
+        if self.thread.isAlive():
+            embed(globals(), locals(), history_filename="./w3net.history")
+            self.net.close()
+        else:
+            print("Failed to connect to the game. Exiting...")
         # self.thread.join()
 
     def send(self, data):
