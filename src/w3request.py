@@ -49,8 +49,7 @@ class Request:
     
     def pkglist(self):
         return (self.utf8(NS_SCRIPTS)
-            .utf8(S_PKG_SYNC)
-            .end())
+            .utf8(S_PKG_SYNC))
 
     def opcode(self, funcname, classname=None):
         self.utf8(NS_SCRIPT_DEBUGGER) \
