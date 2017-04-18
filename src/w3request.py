@@ -5,61 +5,6 @@ class Request:
     def __init__(self):
         self.payload = bytearray()
     
-    def bind(self, namespace):
-        return self.utf8(CMD_BIND) \
-            .utf8(namespace)
-
-    def sc_root_path(self):
-        return self.script_compiler(SC_ROOT_PATH)
-    
-    def sd_unfiltered_locals(self, value):
-        return self.script_debugger(SD_UNFILTERED_LOCALS) \
-            .byte(value)
-    
-    def sd_sort_locals(self, value):
-        return self.script_debugger(SD_SORT_LOCALS) \
-            .byte(value)
-    
-    def script_compiler(self, token):
-        self.utf8(NS_SCRIPT_COMPILER) \
-            .utf8(token)
-        return self
-    
-    def script_debugger(self, token):
-        self.utf8(NS_SCRIPT_DEBUGGER) \
-            .utf8(token)
-        return self
-
-    def remote(self, cmd):
-        return (self.utf8(NS_REMOTE)
-            .int32(0x12345678) # magic number
-            .int32(0x81160008) # must be larger than or equal to 0x81160008, TODO: What's its use?
-            .utf8(cmd))
-
-    def varlist(self, section, name):
-        return (self.utf8(NS_CONFIG)
-            .int32(0xCC00CC00) # magic number
-            .utf8(CFG_LIST)
-            .utf8(section)     # Section
-            .utf8(name))       # Variable Name
-    
-    def reload(self):
-        return (self.utf8(NS_SCRIPTS)
-            .utf8(S_RELOAD))
-    
-    def pkglist(self):
-        return (self.utf8(NS_SCRIPTS)
-            .utf8(S_PKG_SYNC))
-
-    def opcode(self, funcname, classname=None):
-        self.utf8(NS_SCRIPT_DEBUGGER) \
-            .utf8(SD_OPCODE_REQUEST) \
-            .utf16(funcname)
-        if (classname == None):
-            return self.byte(0)
-        else:
-            return self.byte(1).utf16(classname)
-    
     def byte(self, value):
         return self.append(TYPE_BYTE) \
             .append(pack("!?", value))

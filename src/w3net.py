@@ -1,8 +1,7 @@
 import asyncore, socket
-from w3request import Request
 from w3response import ResponseParser
-
 from w3const import *
+from time import sleep
 
 # print(hexlify(Request().bind(Request.NS_SCRIPT_COMPILER).end()))
 
@@ -16,14 +15,7 @@ class W3Net(asyncore.dispatcher_with_send):
         self.isClosing = False
 
     def handle_connect(self):
-        self.send(Request().bind(NS_SCRIPT_COMPILER).end())
-        self.send(Request().bind(NS_SCRIPT_DEBUGGER).end())
-        self.send(Request().bind(NS_SCRIPT_PROFILER).end())
-        self.send(Request().bind(NS_SCRIPTS).end())
-        self.send(Request().bind(NS_UTILITY).end())
-        self.send(Request().bind(NS_REMOTE).end())
-        self.send(Request().bind(NS_CONFIG).end())
-        self.send(Request().sc_root_path().end())
+        pass
         # self.send(Request().remote("testmenu").end()) # Opens test menu
         # self.send(Request().varlist("Visuals", ""))   # Get all of the variables from "Visuals" section
         
@@ -66,7 +58,9 @@ class W3Net(asyncore.dispatcher_with_send):
         # self.send(Request()
         #     .remote("mytest(5)")
         #     .end())
-
+    def handle_write(self):
+        if not self.connected:
+            print("Please connect to the game before sending commands.")
     def handle_read(self):
         response = ResponseParser.parse(self.recv(8192*32))
         result = ""
@@ -76,11 +70,11 @@ class W3Net(asyncore.dispatcher_with_send):
         print(result[:-3])
 
     def handle_close(self):
-        if not self.isClosing:
-            print("Connection failed.")
-            print("Retrying connection...")
-            # self.bind(('localhost', 0))
-            self.connect(('localhost', 37001))
+        print("Connection closed.")
+        sleep(1)
+
+    def reconnect(self):
+        self.connect(('localhost', 37001))
     
     @staticmethod
     def loop():
